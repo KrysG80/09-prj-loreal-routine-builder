@@ -2,23 +2,30 @@
 <html lang="en" dir="ltr">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>L'Oréal | Smart Routine & Product Advisor</title>
+
+    
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;500;700&display=swap" rel="stylesheet"/>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css"/>
-    <link rel="stylesheet" href="style.css" />
+
+    
+    <link rel="stylesheet" href="style.css"/>
   </head>
   <body>
     <div class="page-wrapper">
+      
       <header class="site-header">
-        <img src="img/loreal-logo.png" alt="L'Oréal Logo" class="logo" />
+        <img src="img/loreal-logo.png" alt="L'Oréal Logo" class="logo"/>
         <h1 class="site-title">Smart Routine & Product Advisor</h1>
       </header>
 
-            <div class="toolbar">
+      
+      <div class="toolbar">
         <div class="search-section">
-          <input id="keywordSearch" type="search" placeholder="Search by name or keyword…" aria-label="Search products by name or keyword">
+          <input id="keywordSearch" type="search" placeholder="Search by name or keyword…" aria-label="Search products by name or keyword"/>
         </div>
+
         <div class="select-section">
           <select id="categoryFilter" aria-label="Filter by category">
             <option value="" disabled selected>Choose a Category</option>
@@ -34,16 +41,19 @@
             <option value="fragrance">Fragrance</option>
           </select>
         </div>
+
         <div class="rtl-toggle">
           <label class="switch">
-            <input id="rtlSwitch" type="checkbox" aria-label="Toggle right-to-left layout">
+            <input id="rtlSwitch" type="checkbox" aria-label="Toggle right-to-left layout"/>
             <span>RTL</span>
           </label>
         </div>
       </div>
 
+      
       <div id="productsContainer" class="products-grid"></div>
 
+      
       <div class="selected-products">
         <div class="selected-products__header">
           <h2>Selected Products</h2>
@@ -60,18 +70,27 @@
         </button>
       </div>
 
+      
       <section class="chatbox">
-        <h2>Let's Build Your Routine</h2>
+        <div class="chatbox__header">
+          <h2>Let's Build Your Routine</h2>
+          
+          <span id="searchStatus" class="badge muted" title="Uses a search-enabled model when available; falls back automatically.">
+            Web Search: …
+          </span>
+        </div>
+
         <div id="chatWindow" class="chat-window" aria-live="polite"></div>
 
         <form id="chatForm" class="chat-form">
-          <input id="userInput" name="userInput" type="text" placeholder="Ask follow-ups about your routine..." autocomplete="off" required />
-          <button type="submit" id="sendBtn">
+          <input id="userInput" name="userInput" type="text" placeholder="Ask follow-ups about your routine..." autocomplete="off" required/>
+          <button type="submit" id="sendBtn" aria-label="Send message">
             <i class="fa-solid fa-paper-plane"></i>
           </button>
         </form>
       </section>
 
+      
       <footer class="site-footer">
         <p>&copy; 2025 L'Oréal. All rights reserved.</p>
         <nav>
@@ -82,13 +101,14 @@
       </footer>
     </div>
 
+    
     <dialog id="productModal" class="modal">
       <div class="modal__card">
-        <button id="modalClose" class="modal__close">
+        <button id="modalClose" class="modal__close" aria-label="Close">
           <i class="fa-solid fa-xmark"></i>
         </button>
         <div class="modal__body">
-          <img id="modalImg" alt="" />
+          <img id="modalImg" alt=""/>
           <div class="modal__info">
             <h3 id="modalTitle"></h3>
             <p id="modalBrand" class="muted"></p>
@@ -101,10 +121,24 @@
 
     
     <script>
-  window.WORKER_URL = "https://winter-cherry-f394.kgreen43.workers.dev/";
-  window.ENABLE_WEB_SEARCH = false;
-</script>
-<script src="script.js"></script>
+      
+      window.WORKER_URL = "https://winter-cherry-f394.kgreen43.workers.dev/";
 
+      
+      window.ENABLE_WEB_SEARCH = true;
+
+      
+      window.addEventListener('DOMContentLoaded', () => {
+        const el = document.getElementById('searchStatus');
+        if (el) {
+          el.textContent = `Web Search: ${window.ENABLE_WEB_SEARCH ? 'On (auto-fallback)' : 'Off'}`;
+        }
+        
+        console.log('[Boot]', { WORKER_URL: window.WORKER_URL, ENABLE_WEB_SEARCH: window.ENABLE_WEB_SEARCH });
+      });
+    </script>
+
+    
+    <script src="script.js"></script>
   </body>
 </html>
