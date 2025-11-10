@@ -192,3 +192,54 @@ body {
 .modal__card { background: #fff; border-radius: 14px; padding: 14px; }
 .modal__close { background: var(--brand-1); color: #fff; border: none; border-radius: 50%; width: 36px; height: 36px; cursor: pointer; float: right; }
 .badge { border: 1px solid var(--brand-2); color: var(--brand-2); border-radius: 999px; padding: 4px 8px; font-size: 12px; }
+
+/* Toolbar layout */
+.toolbar {
+  display: grid;
+  grid-template-columns: 1.1fr 1fr auto;
+  gap: 12px;
+  margin: 24px 0;
+}
+
+/* Keyword search input */
+.search-section input[type="search"] {
+  width: 100%;
+  padding: 12px 14px;
+  font-size: 16px;
+  border: 2px solid var(--brand-2);
+  border-radius: 10px;
+  background: #fff;
+}
+.search-section input[type="search"]:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px color-mix(in oklab, var(--brand-2), transparent 70%);
+}
+
+.select-section select { width: 100%; }
+
+/* Simple RTL toggle look */
+.switch {
+  display: inline-flex; align-items: center; gap: 8px;
+  border: 1px solid var(--line); border-radius: 999px; padding: 6px 10px;
+  user-select: none;
+}
+.switch input { accent-color: var(--brand-1); }
+
+/* Modal content layout improvement */
+.modal__body {
+  display: grid;
+  grid-template-columns: 120px 1fr;
+  gap: 14px;
+  align-items: start;
+}
+
+/* ===== RTL support ===== */
+html[dir="rtl"] { direction: rtl; }
+html[dir="rtl"] .products-grid { direction: rtl; }
+html[dir="rtl"] .msg { flex-direction: row-reverse; }
+html[dir="rtl"] .msg .bubble { text-align: right; }
+html[dir="rtl"] .chip { direction: rtl; }
+html[dir="rtl"] .modal__close { float: left; } /* Close button mirrors */
+html[dir="rtl"] .search-section input,
+html[dir="rtl"] .select-section select { text-align: right; }
+

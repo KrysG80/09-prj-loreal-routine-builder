@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" dir="ltr">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -15,20 +15,31 @@
         <h1 class="site-title">Smart Routine & Product Advisor</h1>
       </header>
 
-      <div class="search-section">
-        <select id="categoryFilter">
-          <option value="" disabled selected>Choose a Category</option>
-          <option value="cleanser">Cleansers</option>
-          <option value="moisturizer">Moisturizers & Treatments</option>
-          <option value="skincare">Serums, Treatments & SPF</option>
-          <option value="haircare">Haircare</option>
-          <option value="makeup">Makeup</option>
-          <option value="hair color">Hair Color</option>
-          <option value="hair styling">Hair Styling</option>
-          <option value="men's grooming">Men's Grooming</option>
-          <option value="suncare">Suncare</option>
-          <option value="fragrance">Fragrance</option>
-        </select>
+            <div class="toolbar">
+        <div class="search-section">
+          <input id="keywordSearch" type="search" placeholder="Search by name or keyword…" aria-label="Search products by name or keyword">
+        </div>
+        <div class="select-section">
+          <select id="categoryFilter" aria-label="Filter by category">
+            <option value="" disabled selected>Choose a Category</option>
+            <option value="cleanser">Cleansers</option>
+            <option value="moisturizer">Moisturizers & Treatments</option>
+            <option value="skincare">Serums, Treatments & SPF</option>
+            <option value="haircare">Haircare</option>
+            <option value="makeup">Makeup</option>
+            <option value="hair color">Hair Color</option>
+            <option value="hair styling">Hair Styling</option>
+            <option value="men's grooming">Men's Grooming</option>
+            <option value="suncare">Suncare</option>
+            <option value="fragrance">Fragrance</option>
+          </select>
+        </div>
+        <div class="rtl-toggle">
+          <label class="switch">
+            <input id="rtlSwitch" type="checkbox" aria-label="Toggle right-to-left layout">
+            <span>RTL</span>
+          </label>
+        </div>
       </div>
 
       <div id="productsContainer" class="products-grid"></div>
@@ -51,7 +62,7 @@
 
       <section class="chatbox">
         <h2>Let's Build Your Routine</h2>
-        <div id="chatWindow" class="chat-window"></div>
+        <div id="chatWindow" class="chat-window" aria-live="polite"></div>
 
         <form id="chatForm" class="chat-form">
           <input id="userInput" name="userInput" type="text" placeholder="Ask follow-ups about your routine..." autocomplete="off" required />
@@ -88,9 +99,12 @@
       </div>
     </dialog>
 
+    
     <script>
-      window.WORKER_URL = "https://purple-dew-3d06.kgreen43.workers.dev/";
-      window.ENABLE_WEB_SEARCH = false;
+      
+      window.WORKER_URL = "https://winter-cherry-f394.kgreen43.workers.dev/";
+     
+      window.ENABLE_WEB_SEARCH = true;
     </script>
     <script src="script.js"></script>
   </body>

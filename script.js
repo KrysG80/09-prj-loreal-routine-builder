@@ -14,6 +14,10 @@ const modalBrand = document.getElementById("modalBrand");
 const modalCategory = document.getElementById("modalCategory");
 const modalDesc = document.getElementById("modalDesc");
 
+/* New controls */
+const keywordSearch = document.getElementById("keywordSearch");
+const rtlSwitch = document.getElementById("rtlSwitch");
+
 /* ===== App state ===== */
 let allProducts = [];
 let selectedIds = new Set(JSON.parse(localStorage.getItem("selectedProductIds") || "[]"));
@@ -23,15 +27,12 @@ let chatHistory = JSON.parse(sessionStorage.getItem("chatHistory") || "[]");
 function saveSelections() {
   localStorage.setItem("selectedProductIds", JSON.stringify([...selectedIds]));
 }
-
 function persistChat() {
   sessionStorage.setItem("chatHistory", JSON.stringify(chatHistory));
 }
-
 function scrollChatToBottom() {
   chatWindow.scrollTop = chatWindow.scrollHeight;
 }
-
 function msg(role, text) {
   const el = document.createElement("div");
   el.className = `msg ${role}`;
@@ -39,13 +40,12 @@ function msg(role, text) {
   chatWindow.appendChild(el);
   scrollChatToBottom();
 }
-
 function productById(id) {
   return allProducts.find(p => String(p.id) === String(id));
 }
 
 /* ===== Initial placeholder ===== */
-productsContainer.innerHTML = `<div class="placeholder-message">Select a category to view products</div>`;
+productsContainer.innerHTML = `<div class="placeholder-message">Select a category or search to view products</div>`;
 
 /* ===== Load products from JSON ===== */
 async function loadProducts() {
@@ -54,10 +54,30 @@ async function loadProducts() {
   return data.products;
 }
 
+/* ===== Filtering (category + keyword) ===== */
+function getActiveFilters() {
+  const cat = categoryFilter?.value || "";
+  const q = (keywordSearch?.value || "").trim().toLowerCase();
+  return { cat, q };
+}
+
+function applyFilters() {
+  const { cat, q } = getActiveFilters();
+  let list = [...allProducts];
+  if (cat) list = list.filter(p => p.category === cat);
+  if (q) {
+    list = list.filter(p => {
+      const hay = `${p.name} ${p.brand} ${p.category} ${p.description}`.toLowerCase();
+      return hay.includes(q);
+    });
+  }
+  renderProducts(list);
+}
+
 /* ===== Renderers ===== */
 function renderProducts(products) {
   if (!products.length) {
-    productsContainer.innerHTML = `<div class="placeholder-message">No products found in this category.</div>`;
+    productsContainer.innerHTML = `<div class="placeholder-message">No products found.</div>`;
     return;
   }
 
@@ -78,7 +98,6 @@ function renderProducts(products) {
     `;
   }).join("");
 
-  // Bind per-card buttons
   productsContainer.querySelectorAll(".js-toggle").forEach(btn => {
     btn.addEventListener("click", (e) => {
       const id = Number(e.currentTarget.dataset.id);
@@ -107,35 +126,26 @@ function renderSelectedChips() {
   }).join("");
   selectedProductsList.innerHTML = chips || `<p class="muted">No products selected yet.</p>`;
 
-  // bind remove
   selectedProductsList.querySelectorAll(".chip-remove").forEach(btn => {
     btn.addEventListener("click", (e) => {
       const id = Number(e.currentTarget.dataset.id);
       selectedIds.delete(id);
       saveSelections();
-      // Re-render current product grid to update button state
-      if (categoryFilter.value) {
-        const filtered = allProducts.filter(p => p.category === categoryFilter.value);
-        renderProducts(filtered);
-      }
+      applyFilters();
       renderSelectedChips();
     });
   });
 }
 
-/* ===== Feature: Toggle selection ===== */
+/* ===== Toggle selection ===== */
 function toggleSelect(id) {
   if (selectedIds.has(id)) selectedIds.delete(id); else selectedIds.add(id);
   saveSelections();
-  // Update grid based on current filter
-  if (categoryFilter.value) {
-    const filtered = allProducts.filter(p => p.category === categoryFilter.value);
-    renderProducts(filtered);
-  }
+  applyFilters();
   renderSelectedChips();
 }
 
-/* ===== Feature: Show details (modal) ===== */
+/* ===== Show details (modal) ===== */
 function showDetails(id) {
   const p = productById(id);
   if (!p) return;
@@ -150,7 +160,6 @@ function showDetails(id) {
 
 modalClose?.addEventListener("click", () => productModal.close());
 productModal?.addEventListener("click", (e) => {
-  // Close on backdrop click
   const card = productModal.querySelector(".modal__card");
   if (!card) return;
   const rect = card.getBoundingClientRect();
@@ -159,26 +168,19 @@ productModal?.addEventListener("click", (e) => {
   }
 });
 
-/* ===== Filter by category ===== */
-categoryFilter.addEventListener("change", async (e) => {
-  const selectedCategory = e.target.value;
-  const filtered = allProducts.filter(product => product.category === selectedCategory);
-  renderProducts(filtered);
-});
+/* ===== Events: filters ===== */
+categoryFilter.addEventListener("change", applyFilters);
+keywordSearch.addEventListener("input", applyFilters);
 
 /* ===== Clear selections ===== */
 clearSelectionsBtn.addEventListener("click", () => {
   selectedIds.clear();
   saveSelections();
   renderSelectedChips();
-  // update grid
-  if (categoryFilter.value) {
-    const filtered = allProducts.filter(p => p.category === categoryFilter.value);
-    renderProducts(filtered);
-  }
+  applyFilters();
 });
 
-/* ===== Generate Routine via Cloudflare Worker + OpenAI ===== */
+/* ===== Worker call (OpenAI proxy) ===== */
 async function callWorker(messages, opts = {}) {
   const body = {
     messages,
@@ -202,6 +204,7 @@ function selectedProductsData() {
   return [...selectedIds].map(id => productById(id)).filter(Boolean);
 }
 
+/* ===== Generate Routine ===== */
 generateBtn.addEventListener("click", async () => {
   const picked = selectedProductsData();
   if (!picked.length) {
@@ -217,7 +220,6 @@ generateBtn.addEventListener("click", async () => {
   try {
     chatHistory.push({ role: "user", content: userPrompt });
     const reply = await callWorker(chatHistory);
-    // replace "Thinking…" bubble
     chatWindow.lastElementChild.querySelector(".bubble").textContent = reply;
     chatHistory.push({ role: "assistant", content: reply });
     persistChat();
@@ -235,7 +237,6 @@ chatForm.addEventListener("submit", async (e) => {
   if (!text) return;
   input.value = "";
 
-  // Lightweight topic guard
   const allowedTopics = /(routine|skin|skincare|hair|haircare|makeup|fragrance|suncare|spf|cleanser|moisturizer|serum|retinol|acne|dandruff|foundation|mascara|lipstick|shampoo|conditioner|toner|exfoliat|oil|moisture|hydration|dryness|oily|combination|sensitive|aging|wrinkle|pores|texture|hyperpigmentation|sun|spf|sunscreen|frizz|color)/i;
   const safeText = allowedTopics.test(text) ? text : `The user asked: "${text}". Please politely steer the conversation back to skincare, haircare, makeup, fragrance, or the generated routine.`;
 
@@ -254,14 +255,22 @@ chatForm.addEventListener("submit", async (e) => {
   }
 });
 
-/* ===== Boot ===== */
+
+(function initRTL(){
+  const saved = localStorage.getItem("rtl") === "true";
+  document.documentElement.setAttribute("dir", saved ? "rtl" : "ltr");
+  if (rtlSwitch) rtlSwitch.checked = saved;
+})();
+rtlSwitch?.addEventListener("change", (e) => {
+  const on = e.currentTarget.checked;
+  document.documentElement.setAttribute("dir", on ? "rtl" : "ltr");
+  localStorage.setItem("rtl", String(on));
+});
+
+
 (async function init(){
   allProducts = await loadProducts();
-  // hydrate selections from storage
   renderSelectedChips();
-  // keep grid placeholder until user picks a category
-  if (categoryFilter.value) {
-    const filtered = allProducts.filter(p => p.category === categoryFilter.value);
-    renderProducts(filtered);
-  }
+ 
+  applyFilters();
 })();
