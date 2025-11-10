@@ -190,14 +190,21 @@ async function callWorker(messages, opts = {}) {
     ...opts
   };
 
-  const res = await fetch(window.WORKER_URL, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(body)
-  });
-  if (!res.ok) throw new Error(`Worker error: ${res.status}`);
-  const data = await res.json();
-  return data.reply || "";
+  try {
+    const res = await fetch(window.WORKER_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body)
+    });
+
+    if (!res.ok) throw new Error(`Worker returned ${res.status}`);
+
+    const data = await res.json();
+    return data.reply || "No reply from AI.";
+  } catch (err) {
+    console.error("Worker call failed:", err);
+    throw err; // UI handled by the caller
+  }
 }
 
 function selectedProductsData() {
@@ -224,7 +231,8 @@ generateBtn.addEventListener("click", async () => {
     chatHistory.push({ role: "assistant", content: reply });
     persistChat();
   } catch (err) {
-    chatWindow.lastElementChild.querySelector(".bubble").textContent = "Sorry, I couldn't generate that. Check your Worker URL and API key.";
+    chatWindow.lastElementChild.querySelector(".bubble").textContent =
+      "Sorry, I couldn't generate that. Check your Worker URL and API key.";
     console.error(err);
   }
 });
@@ -250,12 +258,13 @@ chatForm.addEventListener("submit", async (e) => {
     chatHistory.push({ role: "assistant", content: reply });
     persistChat();
   } catch (err) {
-    chatWindow.lastElementChild.querySelector(".bubble").textContent = "The chat service is unavailable. Verify your Worker endpoint.";
+    chatWindow.lastElementChild.querySelector(".bubble").textContent =
+      "The chat service is unavailable. Verify your Worker endpoint.";
     console.error(err);
   }
 });
 
-
+/* ===== RTL toggle ===== */
 (function initRTL(){
   const saved = localStorage.getItem("rtl") === "true";
   document.documentElement.setAttribute("dir", saved ? "rtl" : "ltr");
@@ -267,10 +276,9 @@ rtlSwitch?.addEventListener("change", (e) => {
   localStorage.setItem("rtl", String(on));
 });
 
-
+/* ===== Boot ===== */
 (async function init(){
   allProducts = await loadProducts();
   renderSelectedChips();
- 
   applyFilters();
 })();
